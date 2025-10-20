@@ -11,7 +11,7 @@ pipeline {
           . .venv/bin/activate && \
           python3 -m pip install --upgrade pip && \
           python3 -m pip install -r requirements.txt && \
-          pytest -q
+          python3 -m pytest -q
         '''
       }
     }
@@ -28,5 +28,6 @@ pipeline {
     }
   }
 }
+
 
 
