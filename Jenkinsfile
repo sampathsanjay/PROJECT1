@@ -34,9 +34,9 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'docker-creds', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                     sh '''
-                        # Use sudo because Jenkins user may not have Docker permission
-                        echo $PASSWORD | sudo docker login -u $USERNAME --password-stdin
-                        sudo docker push ${IMAGE}:latest
+                        # Docker login and push (no sudo needed)
+                        echo $PASSWORD | docker login -u $USERNAME --password-stdin
+                        docker push ${IMAGE}:latest
                     '''
                 }
             }
@@ -56,6 +56,7 @@ pipeline {
         }
     }
 }
+
 
 
 
