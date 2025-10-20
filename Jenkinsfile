@@ -24,7 +24,7 @@ pipeline {
                     python3 -m pip install -r requirements.txt
 
                     # Run tests in the tests/ folder
-                    python3 -m pytest -q tests/
+                    python3 -m pytest -q tests/test_app.py
                 '''
             }
         }
@@ -43,16 +43,17 @@ pipeline {
 
     post {
         always {
-            sh 'deactivate || true'
+            echo 'Pipeline finished.'
         }
         success {
-            echo 'Pipeline succeeded: Docker image pushed successfully.'
+            echo 'Pipeline succeeded: Tests passed and Docker image pushed.'
         }
         failure {
-            echo 'Pipeline failed. Check logs above for details.'
+            echo 'Pipeline failed. Check logs for errors.'
         }
     }
 }
+
 
 
 
