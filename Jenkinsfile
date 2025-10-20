@@ -1,41 +1,59 @@
 pipeline {
-  agent any
-  environment {
-    IMAGE = "sampathsanjay/project1-app"
-  }
-  stages {
-    stage('Build & Test') {
-      steps {
-        sh '''
-          # Remove old virtual environment
-          rm -rf .venv
-
-          # Create new virtual environment
-          python3 -m venv .venv
-
-          # Activate venv and install dependencies
-          . .venv/bin/activate
-          python3 -m pip install --upgrade pip==24.1
-          python3 -m pip install -r requirements.txt
-
-          # Run tests
-          python3 -m pytest -q
-        '''
-      }
+    agent any
+    environment {
+        IMAGE = "sampathsanjay/project1-app"
     }
+    stages {
 
-    stage('Push Docker Image') {
-      steps {
-        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-          sh '''
-            echo $PASSWORD | docker login -u $USERNAME --password-stdin
-            docker push ${IMAGE}:latest
-          '''
+        stage('Build & Test') {
+            steps {
+                sh '''
+                    # Remove old virtual environment
+                    rm -rf .venv
+
+                    # Create new virtual environment
+                    python3 -m venv .venv
+
+                    # Activate virtual environment
+                    . .venv/bin/activate
+
+                    # Upgrade pip
+                    python3 -m pip install --upgrade pip==24.1
+
+                    # Install dependencies
+                    python3 -m pip install -r requirements.txt
+
+                    # Run tests in the tests/ folder
+                    python3 -m pytest -q tests/
+                '''
+            }
         }
-      }
+
+        stage('Push Docker Image') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                    sh '''
+                        echo $PASSWORD | docker login -u $USERNAME --password-stdin
+                        docker push ${IMAGE}:latest
+                    '''
+                }
+            }
+        }
     }
-  }
+
+    post {
+        always {
+            sh 'deactivate || true'
+        }
+        success {
+            echo 'Pipeline succeeded: Docker image pushed successfully.'
+        }
+        failure {
+            echo 'Pipeline failed. Check logs above for details.'
+        }
+    }
 }
+
 
 
 
