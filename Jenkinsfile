@@ -1,8 +1,11 @@
 pipeline {
     agent any
+
     environment {
         IMAGE = "sampathsanjay/project1-app"
+        PYTHONUNBUFFERED = "1"
     }
+
     stages {
 
         stage('Build & Test') {
@@ -11,10 +14,8 @@ pipeline {
                     # Remove old virtual environment
                     rm -rf .venv
 
-                    # Create new virtual environment
+                    # Create and activate virtual environment
                     python3 -m venv .venv
-
-                    # Activate virtual environment
                     . .venv/bin/activate
 
                     # Upgrade pip
@@ -23,8 +24,8 @@ pipeline {
                     # Install dependencies
                     python3 -m pip install -r requirements.txt
 
-                    # Run tests in the tests/ folder
-                    python3 -m pytest -q tests/test_app.py
+                    # Run tests
+                    python3 -m pytest -q --exitfirst tests/test_app.py
                 '''
             }
         }
@@ -33,12 +34,14 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'docker-creds', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                     sh '''
-                        echo $PASSWORD | docker login -u $USERNAME --password-stdin
-                        docker push ${IMAGE}:latest
+                        # Use sudo because Jenkins user may not have Docker permission
+                        echo $PASSWORD | sudo docker login -u $USERNAME --password-stdin
+                        sudo docker push ${IMAGE}:latest
                     '''
                 }
             }
         }
+
     }
 
     post {
@@ -53,6 +56,7 @@ pipeline {
         }
     }
 }
+
 
 
 
