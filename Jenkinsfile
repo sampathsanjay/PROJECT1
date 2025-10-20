@@ -7,10 +7,18 @@ pipeline {
     stage('Build & Test') {
       steps {
         sh '''
-          python3 -m venv .venv && \
-          . .venv/bin/activate && \
-          python3 -m pip install --upgrade pip && \
-          python3 -m pip install -r requirements.txt && \
+          # Remove old virtual environment
+          rm -rf .venv
+
+          # Create new virtual environment
+          python3 -m venv .venv
+
+          # Activate venv and install dependencies
+          . .venv/bin/activate
+          python3 -m pip install --upgrade pip==24.1
+          python3 -m pip install -r requirements.txt
+
+          # Run tests
           python3 -m pytest -q
         '''
       }
@@ -28,6 +36,7 @@ pipeline {
     }
   }
 }
+
 
 
 
